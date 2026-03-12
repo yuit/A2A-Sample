@@ -5,6 +5,7 @@ import { GoogleGenAI } from '@google/genai';
 
 // Load configuration from .env at project root
 dotenv.config();
+
 const vertexai = process.env.VERTEX_AI === 'true';
 const apiKey = process.env.VERTEX_API_KEY ?? '';
 const modelName = process.env.VERTEX_MODEL ?? 'gemini-3-flash-preview';
