@@ -1,0 +1,16 @@
+{
+  "name": "a2a-sample",
+  "version": "1.0.0",
+  "description": "A2A Protocol Lesson Samples",
+  "keywords": [],
+  "author": "Yui T.",
+  "dependencies": {
+    "@google/genai": "^1.44.0",
+    "dotenv": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
