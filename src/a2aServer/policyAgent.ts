@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 import { v4 as uuidv4 } from 'uuid';
 import {
+  AgentCard,
   Message,
   Task,
   TaskArtifactUpdateEvent,
@@ -15,15 +16,15 @@ import {
   ExecutionEventBus,
   RequestContext,
 } from '@a2a-js/sdk/server';
+import { initA2AServer } from './utils';
 
-// Load configuration from .env at project root
 dotenv.config();
 
-const vertexai = process.env.VERTEX_AI === 'true';
-const apiKey = process.env.VERTEX_API_KEY ?? '';
-const modelName = process.env.VERTEX_MODEL ?? 'gemini-3-flash-preview';
+const VERTEX_AI_MODEL = process.env.VERTEX_AI_MODEL === 'true';
+const GOOGLE_GENAI_API_KEY = process.env.GOOGLE_GENAI_API_KEY ?? '';
+const GENAI_MODEL = process.env.GENAI_MODEL ?? 'gemini-3-flash-preview';
 
-const systemInstruction = 
+const SYSTEM_INSTRUCTION =
 `
     You are healthcare policy expert. Answer the user's question based on the given document.
     If there is no information in the document, answer that YOU DON'T KNOW.
@@ -32,20 +33,20 @@ const systemInstruction =
 class policyAgent {
   private readonly pdfData: Buffer;
 
-  constructor(pdfRelativePath: string = path.join(__dirname, '..', 'data', '2026AnthemgHIPSBC.pdf')) {
+  constructor(pdfRelativePath: string = path.join(__dirname, '../..', 'data', '2026AnthemgHIPSBC.pdf')) {
     this.pdfData = fs.readFileSync(pdfRelativePath);
   }
 
   async answerQuery(userPrompt: string): Promise<string> {
     const client = new GoogleGenAI({
-      apiKey,
-      vertexai,
+      apiKey: GOOGLE_GENAI_API_KEY,
+      vertexai: VERTEX_AI_MODEL,
     });
 
     const response = await client.models.generateContent({
-      model: modelName,
+      model: GENAI_MODEL,
       config: {
-        systemInstruction,
+        systemInstruction: SYSTEM_INSTRUCTION,
       },
       contents: [
         {
@@ -67,7 +68,36 @@ class policyAgent {
   }
 }
 
-export class policyAgentMessageExecutor implements AgentExecutor {
+const POLICY_AGENT_PORT = Number(process.env.POLICY_AGENT_PORT) || 4000;
+const POLICY_AGENT_BASE_URL = `http://localhost:${POLICY_AGENT_PORT}`;
+const POLICY_AGENT_CARD: AgentCard = {
+  name: 'Policy Agent',
+  description: 'Answers healthcare policy questions using an internal PDF.',
+  protocolVersion: '0.3.0',
+  version: '0.1.0',
+  url: POLICY_AGENT_BASE_URL,
+  skills: [
+    {
+      id: 'insurance_coverage',
+      name: 'Insurance coverage',
+      description: 'Provides information about insurance coverage options and details.',
+      tags: ['insurance', 'coverage'],
+      examples: ['What does my policy cover?', 'Are mental health services included?'],
+    },
+  ],
+  capabilities: { pushNotifications: false },
+  defaultInputModes: ['text'],
+  defaultOutputModes: ['text'],
+  additionalInterfaces: [
+    { url: `${POLICY_AGENT_BASE_URL}/a2a/jsonrpc`, transport: 'JSONRPC' },
+    { url: `${POLICY_AGENT_BASE_URL}/a2a/rest`, transport: 'HTTP+JSON' },
+  ],
+}
+
+/**
+ * A2A AgentExecutor that returns a message.
+ */
+class policyAgentMessageExecutor implements AgentExecutor {
   private readonly agent: policyAgent;
 
   constructor() {
@@ -112,8 +142,10 @@ export class policyAgentMessageExecutor implements AgentExecutor {
 
 /**
  * A2A AgentExecutor that returns a Task: init task, create artifact, then finish task.
+ * 
  */
-export class policyAgentTaskExecutor implements AgentExecutor {
+// @ts-ignore TS6196 - reserved for CLI executor selection
+class policyAgentTaskExecutor implements AgentExecutor {
   private readonly agent: policyAgent;
 
   constructor() {
@@ -182,3 +214,10 @@ export class policyAgentTaskExecutor implements AgentExecutor {
     return;
   }
 }
+
+initA2AServer({
+  executor: new policyAgentMessageExecutor(),
+  agentCard: POLICY_AGENT_CARD,
+  url: POLICY_AGENT_BASE_URL,
+  port: POLICY_AGENT_PORT,
+});
