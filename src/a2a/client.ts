@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
 import { ClientFactory } from '@a2a-js/sdk/client';
-import { Message, MessageSendParams } from '@a2a-js/sdk';
+import { Message, MessageSendParams, Task } from '@a2a-js/sdk';
 
 // Load configuration from .env at project root
 dotenv.config();
@@ -34,13 +34,26 @@ async function main() {
     const firstPart = msg.parts[0];
     if (firstPart && firstPart.kind === 'text') {
       // eslint-disable-next-line no-console
-      console.log('Agent answer:', firstPart.text);
+      console.log('Agent answer (message):', firstPart.text);
       return;
     }
+  } else if (response.kind === 'task') {
+    const task = response as Task;
+    const latestMessage = task.history?.at(-1);
+    const firstPart = latestMessage?.parts?.[0];
+    if (firstPart && firstPart.kind === 'text') {
+      // eslint-disable-next-line no-console
+      console.log('Task:', task);
+      console.log('Agent answer (task):', firstPart.text);
+      return;
+    }
+    // eslint-disable-next-line no-console
+    console.log('Received task without text answer:', task);
+    return;
   }
 
   // eslint-disable-next-line no-console
-  console.log('Received non-message response:', response);
+  console.log('Received unexpected response:', response);
 }
 
 void main();
