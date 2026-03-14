@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { AgentCard } from '@a2a-js/sdk';
 import type { AgentExecutor } from '@a2a-js/sdk/server';
-import { initA2AServer } from './utils';
+import { initA2AServer } from './utils.js';
 import {
   LlmAgent,
   A2AAgentExecutor,

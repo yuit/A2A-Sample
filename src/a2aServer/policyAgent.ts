@@ -16,7 +16,7 @@ import {
   ExecutionEventBus,
   RequestContext,
 } from '@a2a-js/sdk/server';
-import { initA2AServer } from './utils';
+import { initA2AServer } from './utils.js';
 
 dotenv.config();
 
