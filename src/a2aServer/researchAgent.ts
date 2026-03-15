@@ -28,8 +28,7 @@ const ROOT_RESEARCH_AGENT = new LlmAgent({
     information you find.`
 });
 
-const RESEARCH_AGENT_PORT = Number(process.env.RESEARCH_AGENT_PORT) || 4001;
-const RESEARCH_AGENT_BASE_URL = `http://localhost:${RESEARCH_AGENT_PORT}`;
+const RESEARCH_AGENT_BASE_URL = `http://localhost:${process.env.RESEARCH_AGENT_PORT}`;
 const RESEARCH_AGENT_CARD: AgentCard = {
   name: 'Research Agent',
   description: 'Provides healthcare information using Google Search.',
@@ -58,7 +57,8 @@ const RESEARCH_A2A_AGENT_EXECUTOR = new A2AAgentExecutor({
 
 initA2AServer({
   executor: RESEARCH_A2A_AGENT_EXECUTOR as AgentExecutor,
+  name: 'Research Agent',
   agentCard: RESEARCH_AGENT_CARD,
   url: RESEARCH_AGENT_BASE_URL,
-  port: RESEARCH_AGENT_PORT,
+  port: process.env.RESEARCH_AGENT_PORT,
 });

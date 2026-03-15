@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { GoogleGenAI } from '@google/genai';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -68,8 +71,7 @@ class policyAgent {
   }
 }
 
-const POLICY_AGENT_PORT = Number(process.env.POLICY_AGENT_PORT) || 4000;
-const POLICY_AGENT_BASE_URL = `http://localhost:${POLICY_AGENT_PORT}`;
+const POLICY_AGENT_BASE_URL = `http://localhost:${process.env.POLICY_AGENT_PORT}`;
 const POLICY_AGENT_CARD: AgentCard = {
   name: 'Policy Agent',
   description: 'Answers healthcare policy questions using an internal PDF.',
@@ -97,6 +99,7 @@ const POLICY_AGENT_CARD: AgentCard = {
 /**
  * A2A AgentExecutor that returns a message.
  */
+// @ts-ignore TS6196 - reserved for CLI executor selection
 class policyAgentMessageExecutor implements AgentExecutor {
   private readonly agent: policyAgent;
 
@@ -147,7 +150,6 @@ class policyAgentMessageExecutor implements AgentExecutor {
 // @ts-ignore TS6196 - reserved for CLI executor selection
 class policyAgentTaskExecutor implements AgentExecutor {
   private readonly agent: policyAgent;
-
   constructor() {
     this.agent = new policyAgent();
   }
@@ -216,8 +218,9 @@ class policyAgentTaskExecutor implements AgentExecutor {
 }
 
 initA2AServer({
-  executor: new policyAgentMessageExecutor(),
+  executor: new policyAgentTaskExecutor(),
+  name: 'Policy Agent Task Executor',
   agentCard: POLICY_AGENT_CARD,
   url: POLICY_AGENT_BASE_URL,
-  port: POLICY_AGENT_PORT,
+  port: process.env.POLICY_AGENT_PORT,
 });
