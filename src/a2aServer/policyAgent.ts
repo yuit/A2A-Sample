@@ -30,9 +30,39 @@ const GENAI_MODEL = process.env.GENAI_MODEL ?? 'gemini-3-flash-preview';
 
 const SYSTEM_INSTRUCTION =
 `
-    You are healthcare policy expert. Answer the user's question based on the given document.
-    If there is no information in the document, answer that YOU DON'T KNOW.
+    You are healthcare policy expert. Answer the user's question based on the given policy document.
+    If there is no information in the policy document, answer that YOU DON'T KNOW.
 `;
+
+const POLICY_AGENT_PORT = process.env.POLICY_AGENT_PORT;
+if (!POLICY_AGENT_PORT) {
+  throw new Error('POLICY_AGENT_PORT is not set');
+}
+const POLICY_AGENT_BASE_URL = `http://localhost:${POLICY_AGENT_PORT}`;
+const APP_NAME = "HEALTHCARE_POLICY_AGENT";
+const POLICY_AGENT_CARD: AgentCard = {
+  name: 'Policy Agent',
+  description: 'Answers healthcare policy questions using an internal PDF.',
+  protocolVersion: '0.3.0',
+  version: '0.1.0',
+  url: POLICY_AGENT_BASE_URL,
+  skills: [
+    {
+      id: 'insurance_coverage',
+      name: 'Insurance coverage',
+      description: 'Provides information about insurance coverage options and details.',
+      tags: ['insurance', 'coverage'],
+      examples: ['What does my policy cover?', 'Are mental health services included?'],
+    },
+  ],
+  capabilities: { pushNotifications: false },
+  defaultInputModes: ['text'],
+  defaultOutputModes: ['text'],
+  additionalInterfaces: [
+    { url: `${POLICY_AGENT_BASE_URL}/a2a/jsonrpc`, transport: 'JSONRPC' },
+    { url: `${POLICY_AGENT_BASE_URL}/a2a/rest`, transport: 'HTTP+JSON' },
+  ],
+}
 
 class policyAgent {
   private readonly pdfData: Buffer;
@@ -72,30 +102,6 @@ class policyAgent {
   }
 }
 
-const POLICY_AGENT_BASE_URL = `http://localhost:${process.env.POLICY_AGENT_PORT}`;
-const POLICY_AGENT_CARD: AgentCard = {
-  name: 'Policy Agent',
-  description: 'Answers healthcare policy questions using an internal PDF.',
-  protocolVersion: '0.3.0',
-  version: '0.1.0',
-  url: POLICY_AGENT_BASE_URL,
-  skills: [
-    {
-      id: 'insurance_coverage',
-      name: 'Insurance coverage',
-      description: 'Provides information about insurance coverage options and details.',
-      tags: ['insurance', 'coverage'],
-      examples: ['What does my policy cover?', 'Are mental health services included?'],
-    },
-  ],
-  capabilities: { pushNotifications: false },
-  defaultInputModes: ['text'],
-  defaultOutputModes: ['text'],
-  additionalInterfaces: [
-    { url: `${POLICY_AGENT_BASE_URL}/a2a/jsonrpc`, transport: 'JSONRPC' },
-    { url: `${POLICY_AGENT_BASE_URL}/a2a/rest`, transport: 'HTTP+JSON' },
-  ],
-}
 
 /**
  * A2A AgentExecutor that returns a message.
@@ -112,7 +118,7 @@ class policyAgentMessageExecutor implements AgentExecutor {
     const { userMessage, contextId } = requestContext;
 
     // Log basic info about the incoming request
-    logger.info(
+    logger.debug(
       '[PolicyAgentExecutor] Incoming request',
       `contextId=${contextId ?? userMessage.contextId ?? 'none'}`
     );
@@ -177,7 +183,7 @@ class policyAgentTaskExecutor implements AgentExecutor {
     }
     
     // Log basic info about the incoming request
-    logger.info(
+    logger.debug(
       '[PolicyAgentExecutor] Incoming request',
       `contextId=${contextId ?? userMessage.contextId ?? 'none'}`,
       `taskId=${effectiveTaskId}`,
@@ -189,7 +195,7 @@ class policyAgentTaskExecutor implements AgentExecutor {
     const userText = textParts.map((p) => p.text).join('\n');
 
     const answer = await this.agent.answerQuery(userText);
-
+    logger.debug(`[PolicyAgentExecutor] Task ${effectiveTaskId} completed`);
     // 2. Create artifact: publish an artifact for this task
     const artifactUpdate: TaskArtifactUpdateEvent = {
       kind: 'artifact-update',
@@ -198,7 +204,7 @@ class policyAgentTaskExecutor implements AgentExecutor {
       artifact: {
         artifactId: `artifact-${effectiveTaskId}`,
         name: 'result.txt',
-        parts: [{ kind: 'text', text: `\n\nTask ${effectiveTaskId} completed.\n\nHere is the answer: ${answer}` }],
+        parts: [{ kind: 'text', text: answer }],
       },
     };
     eventBus.publish(artifactUpdate);
@@ -226,8 +232,8 @@ class policyAgentTaskExecutor implements AgentExecutor {
 
 initA2AServer({
   executor: new policyAgentTaskExecutor(),
-  name: 'Policy Agent Task Executor',
+  name: APP_NAME,
   agentCard: POLICY_AGENT_CARD,
   url: POLICY_AGENT_BASE_URL,
-  port: process.env.POLICY_AGENT_PORT,
+  port: POLICY_AGENT_PORT,
 });

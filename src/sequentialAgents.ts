@@ -21,9 +21,12 @@ const researchA2AClientAgent = new RemoteA2AClientAgent({
 });
 
 const rootAgent = new SequentialAgent({
-  name: "Root-Sequential-Agent",
+  name: "RootSequentialAgent",
   description: "Healthcare Routing Agent",
-  subAgents: [policyA2AClientAgent, researchA2AClientAgent],
+  subAgents: [
+    researchA2AClientAgent,
+    policyA2AClientAgent,
+  ],
 });
 
 const runner = new InMemoryRunner({
@@ -37,7 +40,10 @@ async function runAgent(prompt: string) {
     newMessage: createUserContent(prompt),
   })) {
     if (isFinalResponse(event) && event.content?.parts?.[0]?.text) {
-      logger.info(`${runner.appName} Final Response: ${event.content.parts[0].text}`);
+      logger.info(
+        `[${runner.appName}] Response:`,
+        `${event.content.parts[0].text}\n\n`
+      )
     }
   }
 }

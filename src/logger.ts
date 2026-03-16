@@ -2,6 +2,10 @@ import winston from 'winston';
 
 const { combine, errors, colorize, printf } = winston.format;
 
+const isDebugMode = process.execArgv.some((arg) =>
+  arg.includes('--inspect') || arg.includes('--debug'),
+);
+
 function formatArg(arg: unknown): string {
   if (arg === null) return 'null';
   if (arg === undefined) return 'undefined';
@@ -30,8 +34,10 @@ const winstonLogger = winston.createLogger({
 });
 
 export const logger = {
-  debug: (...args: unknown[]) =>
-    winstonLogger.debug(args.map(formatArg).join(' ')),
+  debug: (...args: unknown[]) => {
+    if (!isDebugMode) return;
+    winstonLogger.debug(args.map(formatArg).join(' '));
+  },
   info: (...args: unknown[]) =>
     winstonLogger.info(args.map(formatArg).join(' ')),
   warn: (...args: unknown[]) =>

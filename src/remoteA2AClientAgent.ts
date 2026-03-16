@@ -60,7 +60,7 @@ export class RemoteA2AClientAgent extends BaseAgent {
     if (!message) {
       throw new Error('No message to send');
     }
-    logger.info(`${this.name} sending message to ${this._a2aServerUrl}`);
+    logger.debug(`[${this.name}] sending message to ${this._a2aServerUrl}`);
     const response = await this._a2aClient.sendMessage({ message });
     const responseAdkEvent = toAdkEvent(
       response,
@@ -70,8 +70,8 @@ export class RemoteA2AClientAgent extends BaseAgent {
     if (!responseAdkEvent) {
       throw new Error('No response event to yield');
     }
-    logger.info(`${this.name} RawResponse:`, response);
-    logger.info(`${this.name} RawResponseAdkEvent:`, responseAdkEvent);
+    logger.debug(`[${this.name}] RawResponse:`, response);
+    logger.debug(`[${this.name}] RawResponseAdkEvent:`, responseAdkEvent);
     yield responseAdkEvent;
   }
 }
