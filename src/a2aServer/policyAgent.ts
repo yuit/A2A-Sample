@@ -24,20 +24,22 @@ import { logger } from '../logger.js';
 
 dotenv.config();
 
-const VERTEX_AI_MODEL = process.env.VERTEX_AI_MODEL === 'true';
-const GOOGLE_GENAI_API_KEY = process.env.GOOGLE_GENAI_API_KEY ?? '';
-const GENAI_MODEL = process.env.GENAI_MODEL ?? 'gemini-3-flash-preview';
+const GOOGLE_GENAI_API_KEY = process.env.GOOGLE_GENAI_API_KEY;
+if (!GOOGLE_GENAI_API_KEY) {
+  throw new Error('GOOGLE_GENAI_API_KEY is not set');
+}
+const POLICY_AGENT_PORT = process.env.POLICY_AGENT_PORT;
+if (!POLICY_AGENT_PORT) {
+  throw new Error('POLICY_AGENT_PORT is not set');
+}
 
+const VERTEX_AI = process.env.VERTEX_AI === 'true';
+const POLICY_AGENT_MODEL = process.env.POLICY_AGENT_MODEL ?? 'gemini-3-flash-preview';
 const SYSTEM_INSTRUCTION =
 `
     You are healthcare policy expert. Answer the user's question based on the given policy document.
     If there is no information in the policy document, answer that YOU DON'T KNOW.
 `;
-
-const POLICY_AGENT_PORT = process.env.POLICY_AGENT_PORT;
-if (!POLICY_AGENT_PORT) {
-  throw new Error('POLICY_AGENT_PORT is not set');
-}
 const POLICY_AGENT_BASE_URL = `http://localhost:${POLICY_AGENT_PORT}`;
 const APP_NAME = "HEALTHCARE_POLICY_AGENT";
 const POLICY_AGENT_CARD: AgentCard = {
@@ -74,11 +76,11 @@ class policyAgent {
   async answerQuery(userPrompt: string): Promise<string> {
     const client = new GoogleGenAI({
       apiKey: GOOGLE_GENAI_API_KEY,
-      vertexai: VERTEX_AI_MODEL,
+      vertexai: VERTEX_AI,
     });
 
     const response = await client.models.generateContent({
-      model: GENAI_MODEL,
+      model: POLICY_AGENT_MODEL,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
       },

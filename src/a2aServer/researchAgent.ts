@@ -13,11 +13,12 @@ import {
 // Load configuration from .env at project root
 dotenv.config();
 
-const GOOGLE_GENAI_MODEL = process.env.GOOGLE_GENAI_MODEL ?? 'gemini-3-pro-preview';
 const RESEARCH_AGENT_PORT = process.env.RESEARCH_AGENT_PORT;
 if (!RESEARCH_AGENT_PORT) {
   throw new Error('RESEARCH_AGENT_PORT is not set');
 }
+
+const RESEARCH_AGENT_MODEL = process.env.RESEARCH_AGENT_MODEL ?? 'gemini-3-pro-preview';
 const APP_NAME = "HEALTHCARE_RESEARCH_AGENT";
 const RESEARCH_AGENT_BASE_URL = `http://localhost:${process.env.RESEARCH_AGENT_PORT}`;
 const RESEARCH_AGENT_CARD: AgentCard = {
@@ -37,7 +38,7 @@ const RESEARCH_AGENT_CARD: AgentCard = {
 };
 
 const ROOT_RESEARCH_AGENT = new LlmAgent({
-  model: GOOGLE_GENAI_MODEL,
+  model: RESEARCH_AGENT_MODEL,
   name: "HealthResearchAgent",
   tools: [GOOGLE_SEARCH],
   description: `Provides healthcare information about symptoms, health
