@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
-import { FindProvidersAgent } from '../multiServerMCPClient.js';
+import { FindProvidersAgent } from './findProvidersMCPClient.js';
 import { ExecutionEventBus, RequestContext, AgentExecutor } from '@a2a-js/sdk/server';
 import { AgentCard, Message, TextPart } from '@a2a-js/sdk';
 import { initA2AServer } from './utils.js';
-import { logger } from '../logger.js';
+import { logger } from '../utils/logger.js';
 
 dotenv.config();
 

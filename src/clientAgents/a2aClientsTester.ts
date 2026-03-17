@@ -7,13 +7,15 @@ import { logger } from './logger.js';
 // Load configuration from .env at project root
 dotenv.config();
 
-type AgentChoice = 'research' | 'policy';
+type AgentChoice = 'research' | 'policy' | 'findProviders';
 
 async function main(agent: AgentChoice, question: string) {
   const port =
     agent === 'policy'
       ? process.env.POLICY_AGENT_PORT || '4000'
-      : process.env.RESEARCH_AGENT_PORT || '4001';
+      : agent === 'research'
+        ? process.env.RESEARCH_AGENT_PORT || '4001'
+        : process.env.FIND_PROVIDERS_AGENT_PORT || '4002';
   const baseUrl = `http://localhost:${port}`;
 
   // Create an A2A client from the agent card URL
@@ -81,8 +83,8 @@ async function main(agent: AgentChoice, question: string) {
 
 const agent = process.argv[2] as AgentChoice | undefined;
 const question = process.argv.slice(3).join(' ');
-if (!agent || !question || (agent !== 'research' && agent !== 'policy')) {
-  logger.error('Usage: ts-node a2aClient.ts <research|policy> <question>');
+if (!agent || !question || (agent !== 'research' && agent !== 'policy' && agent !== 'findProviders')) {
+  logger.error('Usage: ts-node a2aClient.ts <research|policy|findProviders> <question>');
   process.exit(1);
 }
 void main(agent, question);

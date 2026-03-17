@@ -51,12 +51,18 @@ export class RemoteA2AClientAgent extends BaseAgent {
     throw new Error('Live mode is not implemented yet.');
   }
 
+  /**
+   * Run the agent asynchronously. This method did NOT comply with BaseAgent flow of running before and after callbacks
+   * @param context - The invocation context.
+   * @returns An asynchronous generator of events.
+   */
   protected async *runAsyncImpl(
     context: InvocationContext,
   ): AsyncGenerator<Event, void, void> {
     if (!this._a2aClient) {
       this._a2aClient = await A2A_CLIENT_FACTORY.createFromUrl(this._a2aServerUrl);
     }
+    // Implement calling before callback
     const message = contextToA2AMessage(context);
     if (!message) {
       logger.error('No message to send to A2A server');
@@ -82,5 +88,6 @@ export class RemoteA2AClientAgent extends BaseAgent {
       logger.debug(`[${this.name}] RawResponseAdkEvent:`, responseAdkEvent);
       yield responseAdkEvent;
     }
+     // Implement calling after callback
   }
 }

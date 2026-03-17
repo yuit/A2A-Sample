@@ -8,9 +8,12 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "a2a-client": "rm -f logs/a2aClient.log && node ./dist/a2aClient.js",
     "pa": "rm -f logs/policyAgent.log && node ./dist/a2aServer/policyAgent.js",
     "ra": "rm -f logs/researchAgent.log && node ./dist/a2aServer/researchAgent.js",
-    "client": "rm -f logs/sequentialAgents.log && node ./dist/sequentialAgents.js"
+    "fp": "rm -f logs/findProvidersAgent.log && node ./dist/a2aServer/FindProvidersAgent.js",
+    "seq": "rm -f logs/sequentialAgents.log && node ./dist/sequentialAgents.js",
+    "mcp": "rm -f logs/multiServerMCPClient.log && node ./dist/multiServerMCPClient.js"
   },
   "dependencies": {
     "@a2a-js/sdk": "^0.3.12",

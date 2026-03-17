@@ -2,7 +2,7 @@ import { MultiServerMCPClient as LangChainMultiServerMCPClient } from '@langchai
 import { createAgent } from 'langchain';
 import { ChatAnthropic } from '@langchain/anthropic';
 import dotenv from 'dotenv';
-import { logger } from './logger.js';
+import { logger } from '../utils/logger.js';
 
 // Load configuration from .env at project root
 dotenv.config();

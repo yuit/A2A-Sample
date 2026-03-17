@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { GoogleGenAI } from '@google/genai';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  AgentCard,
+  type AgentCard,
   Message,
   Task,
   TaskArtifactUpdateEvent,
@@ -110,7 +110,7 @@ class policyAgent {
  * A2A AgentExecutor that returns a message.
  */
 // @ts-ignore TS6196 - reserved for CLI executor selection
-class policyAgentMessageExecutor implements AgentExecutor {
+class PolicyAgentMessageExecutor implements AgentExecutor {
   private readonly agent: policyAgent;
 
   constructor() {
@@ -158,7 +158,7 @@ class policyAgentMessageExecutor implements AgentExecutor {
  * 
  */
 // @ts-ignore TS6196 - reserved for CLI executor selection
-class policyAgentTaskExecutor implements AgentExecutor {
+class PolicyAgentTaskExecutor implements AgentExecutor {
   private readonly agent: policyAgent;
   constructor() {
     this.agent = new policyAgent();
@@ -234,7 +234,7 @@ class policyAgentTaskExecutor implements AgentExecutor {
 }
 
 initA2AServer({
-  executor: new policyAgentTaskExecutor(),
+  executor: new PolicyAgentTaskExecutor(),
   name: APP_NAME,
   agentCard: POLICY_AGENT_CARD,
   url: POLICY_AGENT_BASE_URL,
