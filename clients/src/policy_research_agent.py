@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 High-level Python client entrypoint for talking to the Policy and Research A2A agents,
 using ADK Python's RemoteA2aAgent via a small helper named remote_to_a2a.

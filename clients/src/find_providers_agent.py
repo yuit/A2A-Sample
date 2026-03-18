@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 Microsoft Agent Framework A2A client for the Find Providers JS agent.
 
