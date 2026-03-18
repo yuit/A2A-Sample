@@ -1,0 +1,11 @@
+[project]
+name = "a2a-clients"
+version = "0.1.0"
+description = "A2A Client Sample"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "google-adk[a2a]",
+  "a2a-sdk",
+  "python-dotenv",
+]
